@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSMP III Studio - Developed by Bishnu with ❤️</title>
+    <meta name="description" content="CSMP III Continuous System Modeling Program - IDE and Compiler for Lab Practicals. Developed by Bishnu.">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007acc">
+    <link rel="stylesheet" href="ide-theme.css">
+</head>
+<body>
+    <!-- Menu Bar -->
+    <div class="menubar">
+        <div class="app-brand">🔬 CSMP III Studio</div>
+        <div class="menu-item dropdown">
+            <span>File</span>
+            <div class="dropdown-content">
+                <a href="#" onclick="newFile()">📄 New &nbsp;&nbsp;&nbsp;<span class="shortcut">Ctrl+N</span></a>
+                <a href="#" onclick="openFile()">📂 Open &nbsp;&nbsp;&nbsp;<span class="shortcut">Ctrl+O</span></a>
+                <a href="#" onclick="saveFile()">💾 Save &nbsp;&nbsp;&nbsp;<span class="shortcut">Ctrl+S</span></a>
+            </div>
+        </div>
+        <div class="menu-item dropdown">
+            <span>Edit</span>
+            <div class="dropdown-content">
+                <a href="#" onclick="cutText()">✂️ Cut</a>
+                <a href="#" onclick="copyText()">📋 Copy</a>
+                <a href="#" onclick="pasteText()">📋 Paste</a>
+            </div>
+        </div>
+        <div class="menu-item dropdown">
+            <span>Execute</span>
+            <div class="dropdown-content">
+                <a href="#" onclick="runSimulation()">▶ Compile & Run &nbsp;&nbsp;&nbsp;<span class="shortcut">F9</span></a>
+            </div>
+        </div>
+        <div class="menu-item dropdown">
+            <span>Help</span>
+            <div class="dropdown-content">
+                <a href="#" onclick="showAbout()">ℹ️ About</a>
+                <a href="#" onclick="showSyntaxHelp()">📖 CSMP Syntax Reference</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-group">
+            <button class="tool-btn" onclick="newFile()" title="New Document (Ctrl+N)">📄 New</button>
+            <button class="tool-btn" onclick="openFile()" title="Open Document (Ctrl+O)">📂 Open</button>
+            <button class="tool-btn" onclick="saveFile()" title="Save (Ctrl+S)">💾 Save</button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="toolbar-group">
+            <button class="tool-btn" onclick="cutText()" title="Cut">✂️</button>
+            <button class="tool-btn" onclick="copyText()" title="Copy">📋</button>
+            <button class="tool-btn" onclick="pasteText()" title="Paste">📋</button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="toolbar-group">
+            <button class="tool-btn btn-run" onclick="runSimulation()" title="Compile & Run (F9)">▶ Compile & Run</button>
+            <button class="tool-btn" onclick="clearConsole()" title="Clear Console">🧹 Clear</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-title">📁 Project Explorer</div>
+            <div class="tree-item folder open">▼ Project1</div>
+            <div class="tree-item file active" onclick="switchFile('main.csmp')"> &nbsp; 📄 main.csmp</div>
+            <div class="tree-item file" onclick="switchFile('suspension.csmp')"> &nbsp; 📄 suspension.csmp</div>
+            <div class="sidebar-title" style="margin-top: auto; border-top: 1px solid #ccc;">🎛️ Parameter Sliders</div>
+            <div id="slider-panel" class="slider-panel">
+                <div class="slider-hint">Run a simulation with CONST or PARAM statements to see live sliders here.</div>
+            </div>
+        </div>
+
+        <!-- Center / Editor -->
+        <div class="center-column">
+            <div class="editor-tabs" id="tabs-container">
+                <div class="tab active" onclick="switchFile('main.csmp')">main.csmp</div>
+                <div class="tab" onclick="switchFile('suspension.csmp')">suspension.csmp</div>
+            </div>
+            <div class="editor-container">
+                <div class="line-numbers" id="line-numbers">1</div>
+                <textarea id="code-editor" spellcheck="false" autocomplete="off" oninput="updateLineNumbers()" onscroll="syncScroll()">TITLE DIFFERENTIAL EQUATION SOLUTION
+*
+* Solving: 3x''' + 15x'' + 50x' + 200x = 10
+*
+X3DOT = (10.0 / 3.0) - (15.0/3.0)*X2DOT - (50.0/3.0)*XDOT - (200.0/3.0)*X
+X2DOT = INTGRL(0.0, X3DOT)
+XDOT = INTGRL(0.0, X2DOT)
+X = INTGRL(0.0, XDOT)
+*
+TIMER DELT = 0.005, FINTIM = 1.5, PRDEL = 0.05, OUTDEL = 0.05
+PRINT X, XDOT, X2DOT, X3DOT
+PRTPLT X
+LABEL DISPLACEMENT VS TIME
+END
+STOP</textarea>
+            </div>
+        </div>
+
+        <!-- Right / Outputs -->
+        <div class="right-column">
+            <!-- Plotter -->
+            <div class="pane plotter-pane">
+                <div class="pane-header">📈 Plotter View</div>
+                <div class="canvas-container">
+                    <canvas id="plotCanvas"></canvas>
+                    <div id="crosshair-tooltip" class="crosshair-tooltip" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Console / Messages -->
+            <div class="pane console-pane">
+                <div class="pane-header">💻 Compiler Output</div>
+                <div id="console-output" class="console-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="statusbar">
+        <div id="status-pos">Line: 1, Col: 1</div>
+        <div>Integration: RK4 (Runge-Kutta)</div>
+        <div>CSMP III</div>
+        <div class="brand-status">Developed by Bishnu with ❤️</div>
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="file-input" style="display: none;" accept=".csmp,.txt" onchange="handleFileSelect(event)">
+
+    <!-- About Dialog -->
+    <div id="about-dialog" class="modal-overlay" style="display: none;" onclick="this.style.display='none'">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <h2>🔬 CSMP III Studio</h2>
+            <p><strong>Continuous System Modeling Program</strong></p>
+            <p>Version 2.0 — Next Level Edition</p>
+            <hr>
+            <p>Features:</p>
+            <ul>
+                <li>Real CSMP III Compiler & Simulator</li>
+                <li>Runge-Kutta 4th Order Integration (RKS)</li>
+                <li>Real-Time Parameter Sliders</li>
+                <li>Interactive Graph Crosshairs</li>
+                <li>Animated Oscilloscope Rendering</li>
+            </ul>
+            <hr>
+            <p style="text-align: center; font-size: 18px;"><strong>Developed by Bishnu with ❤️</strong></p>
+            <button onclick="document.getElementById('about-dialog').style.display='none'" style="margin-top: 10px; width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <!-- Syntax Help Dialog -->
+    <div id="syntax-dialog" class="modal-overlay" style="display: none;" onclick="this.style.display='none'">
+        <div class="modal-box modal-wide" onclick="event.stopPropagation()">
+            <h2>📖 CSMP III Syntax Reference</h2>
+            <table class="ref-table">
+                <tr><th>Statement</th><th>Syntax</th><th>Example</th></tr>
+                <tr><td>Title</td><td>TITLE text</td><td>TITLE MY SIMULATION</td></tr>
+                <tr><td>Integration</td><td>Y = INTGRL(IC, RATE)</td><td>X = INTGRL(0.0, XDOT)</td></tr>
+                <tr><td>Constants</td><td>CONST K=val, M=val</td><td>CONST K=50.0, M=3.0</td></tr>
+                <tr><td>Parameters</td><td>PARAM K=val</td><td>PARAM DAMP=0.5</td></tr>
+                <tr><td>Timer</td><td>TIMER DELT=dt, FINTIM=tf</td><td>TIMER DELT=0.01, FINTIM=10.0</td></tr>
+                <tr><td>Print</td><td>PRINT var1, var2</td><td>PRINT X, XDOT</td></tr>
+                <tr><td>Plot</td><td>PRTPLT var</td><td>PRTPLT X</td></tr>
+                <tr><td>Step Input</td><td>STEP(time)</td><td>F = 10.0*STEP(1.0)</td></tr>
+                <tr><td>Ramp Input</td><td>RAMP(time)</td><td>F = RAMP(0.5)</td></tr>
+                <tr><td>Limiter</td><td>LIMIT(lo, hi, X)</td><td>Y = LIMIT(-1, 1, X)</td></tr>
+                <tr><td>Math</td><td>SIN, COS, EXP, SQRT, ABS, ALOG</td><td>Y = SIN(TIME)</td></tr>
+                <tr><td>Method</td><td>METHOD RKS or METHOD RECT</td><td>METHOD RKS</td></tr>
+                <tr><td>Label</td><td>LABEL text</td><td>LABEL POSITION VS TIME</td></tr>
+                <tr><td>End/Stop</td><td>END / STOP</td><td>END</td></tr>
+            </table>
+            <button onclick="document.getElementById('syntax-dialog').style.display='none'" style="margin-top: 10px; width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <script src="compiler.js"></script>
+    <script src="app.js"></script>
+    <script>
+        if(typeof updateLineNumbers === 'function') updateLineNumbers();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
