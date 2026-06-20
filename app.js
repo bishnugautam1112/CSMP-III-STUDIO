@@ -45,11 +45,11 @@ function switchFile(filename) {
     editor.value = files[filename];
     
     document.querySelectorAll('.tab').forEach(t => {
-        if(t.textContent.trim() === filename) t.classList.add('active');
+        if(t.getAttribute('data-name') === filename) t.classList.add('active');
         else t.classList.remove('active');
     });
     document.querySelectorAll('.tree-item.file').forEach(i => {
-        if(i.textContent.includes(filename)) i.classList.add('active');
+        if(i.getAttribute('data-name') === filename) i.classList.add('active');
         else i.classList.remove('active');
     });
     updateLineNumbers();
@@ -61,10 +61,7 @@ function newFile() {
     let name = `Untitled-${num}.csmp`;
     files[name] = "";
     filePaths[name] = null;
-    const tab = document.createElement('div'); tab.className = 'tab'; tab.textContent = name;
-    tab.onclick = () => switchFile(name); document.getElementById('tabs-container').appendChild(tab);
-    const side = document.createElement('div'); side.className = 'tree-item file'; side.innerHTML = '&nbsp; 📄 ' + name;
-    side.onclick = () => switchFile(name); document.getElementById('file-tree').appendChild(side);
+    createTabUI(name);
     switchFile(name);
 }
 async function openFile() { 
@@ -73,12 +70,9 @@ async function openFile() {
         if (result) {
             files[result.name] = result.content;
             filePaths[result.name] = result.path;
-            let exists = Array.from(document.querySelectorAll('.tab')).some(t => t.textContent.trim() === result.name);
+            let exists = Array.from(document.querySelectorAll('.tab')).some(t => t.getAttribute('data-name') === result.name);
             if (!exists) {
-                const tab = document.createElement('div'); tab.className = 'tab'; tab.textContent = result.name;
-                tab.onclick = () => switchFile(result.name); document.getElementById('tabs-container').appendChild(tab);
-                const side = document.createElement('div'); side.className = 'tree-item file'; side.innerHTML = '&nbsp; 📄 ' + result.name;
-                side.onclick = () => switchFile(result.name); document.getElementById('file-tree').appendChild(side);
+                createTabUI(result.name);
             } else if (currentFile === result.name) {
                 editor.value = result.content; // Fix upload overwrite bug
             }
@@ -94,12 +88,9 @@ function handleFileSelect(event) {
     const reader = new FileReader();
     reader.onload = function(e) {
         files[file.name] = e.target.result;
-        let exists = Array.from(document.querySelectorAll('.tab')).some(t => t.textContent.trim() === file.name);
+        let exists = Array.from(document.querySelectorAll('.tab')).some(t => t.getAttribute('data-name') === file.name);
         if (!exists) {
-            const tab = document.createElement('div'); tab.className = 'tab'; tab.textContent = file.name;
-            tab.onclick = () => switchFile(file.name); document.getElementById('tabs-container').appendChild(tab);
-            const side = document.createElement('div'); side.className = 'tree-item file'; side.innerHTML = '&nbsp; 📄 ' + file.name;
-            side.onclick = () => switchFile(file.name); document.getElementById('file-tree').appendChild(side);
+            createTabUI(file.name);
         } else if (currentFile === file.name) {
             editor.value = e.target.result; // Fix upload overwrite bug
         }
@@ -350,12 +341,9 @@ function loadExample(type) {
     }
     files[name] = content;
     filePaths[name] = null;
-    let exists = Array.from(document.querySelectorAll('.tab')).some(t => t.textContent.trim() === name);
+    let exists = Array.from(document.querySelectorAll('.tab')).some(t => t.getAttribute('data-name') === name);
     if (!exists) {
-        const tab = document.createElement('div'); tab.className = 'tab'; tab.textContent = name;
-        tab.onclick = () => switchFile(name); document.getElementById('tabs-container').appendChild(tab);
-        const side = document.createElement('div'); side.className = 'tree-item file'; side.innerHTML = '&nbsp; 📄 ' + name;
-        side.onclick = () => switchFile(name); document.getElementById('file-tree').appendChild(side);
+        createTabUI(name);
     }
     switchFile(name);
 }
@@ -367,4 +355,85 @@ newFile();
 if (!localStorage.getItem('welcomed_csmp_v2')) {
     document.getElementById('welcome-dialog').style.display = 'flex';
     localStorage.setItem('welcomed_csmp_v2', 'true');
+}
+
+let contextMenuTarget = null;
+function createTabUI(name) {
+    let exists = Array.from(document.querySelectorAll('.tab')).some(t => t.getAttribute('data-name') === name);
+    if (exists) return;
+
+    const tab = document.createElement('div');
+    tab.className = 'tab';
+    tab.setAttribute('data-name', name);
+    
+    const title = document.createElement('span');
+    title.textContent = name;
+    title.onclick = () => switchFile(name);
+    
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'tab-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = (e) => { e.stopPropagation(); closeFile(name); };
+    
+    tab.appendChild(title);
+    tab.appendChild(closeBtn);
+    
+    tab.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        showContextMenu(e.pageX, e.pageY, name);
+    });
+    document.getElementById('tabs-container').appendChild(tab);
+
+    const side = document.createElement('div');
+    side.className = 'tree-item file';
+    side.setAttribute('data-name', name);
+    side.innerHTML = '&nbsp; 📄 ' + name;
+    side.onclick = () => switchFile(name);
+    
+    side.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        showContextMenu(e.pageX, e.pageY, name);
+    });
+    document.getElementById('file-tree').appendChild(side);
+}
+
+function closeFile(name) {
+    if (Object.keys(files).length <= 1) {
+        newFile(); // Always keep one file open
+    }
+    delete files[name];
+    delete filePaths[name];
+    
+    const tab = document.querySelector(`.tab[data-name="${name}"]`);
+    if (tab) tab.remove();
+    const side = document.querySelector(`.tree-item.file[data-name="${name}"]`);
+    if (side) side.remove();
+    
+    if (currentFile === name) {
+        switchFile(Object.keys(files)[0]);
+    }
+}
+
+function showContextMenu(x, y, name) {
+    contextMenuTarget = name;
+    const menu = document.getElementById('tab-context-menu');
+    if (!menu) return;
+    menu.style.display = 'block';
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+}
+
+document.addEventListener('click', () => {
+    const menu = document.getElementById('tab-context-menu');
+    if(menu) menu.style.display = 'none';
+});
+
+function ctxClose() {
+    if (contextMenuTarget) closeFile(contextMenuTarget);
+}
+function ctxCloseOthers() {
+    if (!contextMenuTarget) return;
+    Object.keys(files).forEach(f => {
+        if (f !== contextMenuTarget) closeFile(f);
+    });
 }

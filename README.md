@@ -94,7 +94,7 @@ Contributions, issues, and feature requests are always welcome! Feel free to che
 
 ## 👨‍💻 Developed By
 **Bishnu** 
-*(Support the project via the Donate button inside the app!)*
+*(Support the project via the Buy us Momo Donation button inside the app!)*
 
 ## 📄 License
 This project is [MIT](LICENSE) licensed.
