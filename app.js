@@ -20,8 +20,8 @@ function log(msg, className="info-msg") {
 }
 
 function clearConsole() {
-    consoleOut.innerHTML = `<div class="info-msg" style="color: #007acc; font-weight: bold;">🔬 CSMP III Compiler v2.0
-Developed by Bishnu with ❤️</div><br><div class="info-msg">Ready. Type your simulation code and click Run.</div>`;
+    document.getElementById('console-output').innerHTML = `
+        <div class="brand-status" style="font-size: 14px; margin-bottom: 5px;">CSMP III Compiler v2.0 Developed by Bishnu</div><br><div class="info-msg">Ready. Type your simulation code and click Run.</div>`;
 }
 
 function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
