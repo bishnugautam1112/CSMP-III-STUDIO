@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSMP III Studio - Developed by Bishnu with ❤️</title>
+    <title>CSMP III Studio</title>
     <meta name="description" content="CSMP III Continuous System Modeling Program - IDE and Compiler for Lab Practicals. Developed by Bishnu.">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#007acc">
@@ -12,7 +12,7 @@
 <body>
     <!-- Menu Bar -->
     <div class="menubar">
-        <div class="app-brand">🔬 CSMP III Studio</div>
+        <div class="app-brand"><img src="assets/icon.png" class="brand-logo" alt="Logo"> CSMP III Studio</div>
         <div class="menu-item dropdown">
             <span>File</span>
             <div class="dropdown-content">
@@ -40,6 +40,10 @@
             <div class="dropdown-content">
                 <a href="#" onclick="showAbout()">ℹ️ About</a>
                 <a href="#" onclick="showSyntaxHelp()">📖 CSMP Syntax Reference</a>
+                <a href="#" onclick="loadExample('main')">💡 Example: Differential Eq</a>
+                <a href="#" onclick="loadExample('suspension')">💡 Example: Suspension</a>
+                <div class="toolbar-divider" style="margin: 4px 0;"></div>
+                <a href="#" onclick="showDonate()">🥟 Buy us Momo</a>
             </div>
         </div>
     </div>
@@ -68,9 +72,8 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-title">📁 Project Explorer</div>
-            <div class="tree-item folder open">▼ Project1</div>
-            <div class="tree-item file active" onclick="switchFile('main.csmp')"> &nbsp; 📄 main.csmp</div>
-            <div class="tree-item file" onclick="switchFile('suspension.csmp')"> &nbsp; 📄 suspension.csmp</div>
+            <div class="tree-item folder open">▼ Project</div>
+            <div id="file-tree"></div>
             <div class="sidebar-title" style="margin-top: auto; border-top: 1px solid #ccc;">🎛️ Parameter Sliders</div>
             <div id="slider-panel" class="slider-panel">
                 <div class="slider-hint">Run a simulation with CONST or PARAM statements to see live sliders here.</div>
@@ -80,26 +83,10 @@
         <!-- Center / Editor -->
         <div class="center-column">
             <div class="editor-tabs" id="tabs-container">
-                <div class="tab active" onclick="switchFile('main.csmp')">main.csmp</div>
-                <div class="tab" onclick="switchFile('suspension.csmp')">suspension.csmp</div>
             </div>
             <div class="editor-container">
                 <div class="line-numbers" id="line-numbers">1</div>
-                <textarea id="code-editor" spellcheck="false" autocomplete="off" oninput="updateLineNumbers()" onscroll="syncScroll()">TITLE DIFFERENTIAL EQUATION SOLUTION
-*
-* Solving: 3x''' + 15x'' + 50x' + 200x = 10
-*
-X3DOT = (10.0 / 3.0) - (15.0/3.0)*X2DOT - (50.0/3.0)*XDOT - (200.0/3.0)*X
-X2DOT = INTGRL(0.0, X3DOT)
-XDOT = INTGRL(0.0, X2DOT)
-X = INTGRL(0.0, XDOT)
-*
-TIMER DELT = 0.005, FINTIM = 1.5, PRDEL = 0.05, OUTDEL = 0.05
-PRINT X, XDOT, X2DOT, X3DOT
-PRTPLT X
-LABEL DISPLACEMENT VS TIME
-END
-STOP</textarea>
+                <textarea id="code-editor" spellcheck="false" autocomplete="off" oninput="updateLineNumbers()" onscroll="syncScroll()"></textarea>
             </div>
         </div>
 
@@ -176,6 +163,34 @@ STOP</textarea>
                 <tr><td>End/Stop</td><td>END / STOP</td><td>END</td></tr>
             </table>
             <button onclick="document.getElementById('syntax-dialog').style.display='none'" style="margin-top: 10px; width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <!-- Donate Dialog -->
+    <div id="donate-dialog" class="modal-overlay" style="display: none;" onclick="this.style.display='none'">
+        <div class="modal-box" onclick="event.stopPropagation()" style="text-align: center;">
+            <h2>🥟 Buy us Momo</h2>
+            <p>If you like CSMP III Studio, consider donating!</p>
+            <img src="assets/qr.jpeg" alt="Donate QR" style="margin: 15px auto; display: block; border-radius: 8px; width: 150px; height: 150px;">
+            <p style="font-size: 13px; color: #555;">Scan to send some momo love ❤️</p>
+            <button onclick="document.getElementById('donate-dialog').style.display='none'" style="margin-top: 10px; width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <!-- Welcome Dialog -->
+    <div id="welcome-dialog" class="modal-overlay" style="display: none;">
+        <div class="modal-box" style="text-align: center; max-width: 450px;">
+            <h2 style="margin-top: 0; color: var(--brand-color);">Welcome to CSMP III Studio! 🚀</h2>
+            <p style="font-size: 14px; color: #444; line-height: 1.5;">Thank you for installing our tool! We've transformed the classic compiler into a modern, lightning-fast native Windows IDE.</p>
+            
+            <div style="background: #f8f8f8; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="margin: 0 0 10px 0; font-weight: bold; font-size: 16px;">🥟 Support the Project 🥟</p>
+                <p style="font-size: 13px; margin: 0 0 15px 0; color: #555;">If this helps with your labs or projects, please consider sending some momo love to support development!</p>
+                <img src="assets/qr.jpeg" alt="Donate QR" style="border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); width: 150px; height: 150px;">
+                <p style="font-size: 11px; color: #888; margin-top: 10px;">(You can also find this later in the Help menu)</p>
+            </div>
+
+            <button onclick="document.getElementById('welcome-dialog').style.display='none'" style="width: 100%; padding: 10px; font-weight: bold; background: var(--brand-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Let's Start Coding!</button>
         </div>
     </div>
 

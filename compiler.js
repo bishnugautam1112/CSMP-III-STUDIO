@@ -88,10 +88,15 @@ class CSMPCompiler {
         const eqIdx = line.indexOf('=');
         if (eqIdx > 0) {
             const lhs = line.substring(0, eqIdx).trim();
+            const reserved = ['let','class','return','function','var','const','if','else','for','while','do','break','continue','switch','case','default','try','catch','finally','throw','new','delete','typeof','instanceof','void','yield','await','import','export','super','this','debugger','with','state'];
+            if (reserved.includes(lhs.toLowerCase())) {
+                this.errors.push({ line: lineNum, msg: `Variable name "${lhs}" is a reserved keyword.`, text: line });
+                return;
+            }
             const rhs = line.substring(eqIdx + 1).trim();
 
             // Check if RHS is INTGRL
-            const intgrlMatch = rhs.match(/^INTGRL\s*\((.*?),(.*)\)$/i);
+            const intgrlMatch = rhs.match(/^INTGRL\s*\((.*),\s*(.*)\)$/i);
             if (intgrlMatch) {
                 this.integrators.push({
                     stateVar: lhs,
@@ -108,7 +113,7 @@ class CSMPCompiler {
                 });
             }
         } else {
-            this.warnings.push({ line: lineNum, msg: `Unrecognized statement: ${line}` });
+            this.errors.push({ line: lineNum, msg: `Syntax Error: Unrecognized statement.`, text: line });
         }
     }
 
@@ -129,6 +134,8 @@ class CSMPCompiler {
         s = s.replace(/\bRAMP\s*\(\s*([^)]+)\s*\)/gi, '(TIME >= $1 ? (TIME - $1) : 0.0)');
         // LIMIT(P1, P2, X) → Math.max(P1, Math.min(P2, X))
         s = s.replace(/\bLIMIT\s*\(\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/gi, 'Math.max($1, Math.min($2, $3))');
+        // Exponentiation ^ to **
+        s = s.replace(/\^/g, '**');
         return s;
     }
 
@@ -139,6 +146,9 @@ class CSMPCompiler {
     }
 
     sortEquations() {
+        // Clear previous dependency errors to avoid slider memory bloat
+        this.errors = this.errors.filter(e => !e.msg.startsWith('Unsatisfied dependency'));
+        
         let knowns = new Set(['TIME', 'DELT', 'FINTIM']);
         Object.keys(this.constants).forEach(k => knowns.add(k));
         this.integrators.forEach(i => knowns.add(i.stateVar));

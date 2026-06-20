@@ -15,13 +15,14 @@
       "target": [
         "nsis"
       ],
-      "icon": "build/icon.png"
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true
+      "createDesktopShortcut": true,
+      "license": "build/license.txt"
     }
   },
   "author": "Bishnu",
@@ -29,5 +30,9 @@
   "devDependencies": {
     "electron": "^42.4.1",
     "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "jimp": "^0.22.10",
+    "png-to-ico": "^3.0.1"
   }
 }

@@ -1,0 +1,12 @@
+Welcome to CSMP III Studio 🔬
+Developed by Bishnu with ❤️
+
+This is a complete redesign of the classic CSMP III simulator into a modern, native Windows application. It features real-time compilation, an interactive oscilloscope plotter, and a classic IDE interface.
+
+We put a lot of hard work into this!
+If you find this tool helpful for your lab practicals, exams, or projects, please consider supporting the development.
+
+🥟 BUY US MOMO 🥟
+Inside the app, you can click "Help -> 🥟 Buy us Momo" to scan our QR code and send a donation. Any momo love is greatly appreciated!
+
+Click "I Agree" to continue the installation and start coding!
