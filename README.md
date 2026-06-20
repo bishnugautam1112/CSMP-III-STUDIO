@@ -28,10 +28,10 @@ CSMP III Studio completely reimagines the classic Continuous System Modeling Pro
 ## 📸 Screenshots
 
 *(Add your screenshots here!)*
-> ![IDE Interface](placeholder_image_link_here)
+> ![IDE Interface](assets/ide-screenshot.png)
 > *The modern IDE featuring real-time syntax error checking and parameter sliders.*
 
-> ![Plotting Engine](placeholder_image_link_here)
+> ![Plotting Engine](assets/plotter-screenshot.png)
 > *The built-in oscilloscope rendering multi-variable integration in real time.*
 
 ---
